@@ -3,6 +3,7 @@ package com.busData.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,16 +91,40 @@ public class BusDataService {
 		}
 	}
 
-	//Shows bus data by bus number
+	// Shows bus data by bus number
 	public BusDataDTO_ForPassengers showBusDataByBusID(String busNumber) throws BusNotFound {
-		BusDataDTO_ForPassengers busDataDTO_ForPassengers= new BusDataDTO_ForPassengers();
+		BusDataDTO_ForPassengers busDataDTO_ForPassengers = new BusDataDTO_ForPassengers();
 		Optional<BusDataEntity> busDataFromRepo = busDataRepo.findById(busNumber);
-		if(busDataFromRepo.isPresent()){
+		if (busDataFromRepo.isPresent()) {
 			BusDataEntity busDataEntity = busDataFromRepo.get();
 			BeanUtils.copyProperties(busDataEntity, busDataDTO_ForPassengers);
 			return busDataDTO_ForPassengers;
-		}else {
+		} else {
 			throw new BusNotFound(environment.getProperty(ValidationConstants.BUS_NOT_FOUND.toString()));
 		}
 	}
+
+	// Search Bus data by source and destination with streams 
+	public List<BusDataDTO_ForPassengers> getBusDataBySourceAndDestination(String source, String destination) {
+		List<BusDataEntity> busDataEntities = busDataRepo.findBySourceAndDestinationIgnoreCase(source, destination);
+		return busDataEntities.stream().map(busDataEntity -> {
+			BusDataDTO_ForPassengers busDataDTO = new BusDataDTO_ForPassengers();
+			BeanUtils.copyProperties(busDataEntity, busDataDTO);
+			return busDataDTO;
+		}).collect(Collectors.toList());
+		
+	}
+	// Search Bus data by source and destination without streams 
+	public List<BusDataDTO_ForPassengers> getBusDataBySourceAndDestinationWithoutLambdaExpressions(String source, String destination) {
+        List<BusDataEntity> busDataEntities = busDataRepo.findBySourceAndDestinationIgnoreCase(source, destination);
+        
+        List<BusDataDTO_ForPassengers> busDataDTOList = new ArrayList<>();
+        for (BusDataEntity busDataEntity : busDataEntities) {
+            BusDataDTO_ForPassengers busDataDTO = new BusDataDTO_ForPassengers();
+            BeanUtils.copyProperties(busDataEntity, busDataDTO);
+            busDataDTOList.add(busDataDTO);
+        }
+        
+        return busDataDTOList;
+    }
 }

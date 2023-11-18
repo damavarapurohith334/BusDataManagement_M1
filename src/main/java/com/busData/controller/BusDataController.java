@@ -76,4 +76,11 @@ public class BusDataController {
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(busDataService.showBusDataByBusID(busNumber));
 	}
 	
+//Show buses data by Source and destination
+	@GetMapping("get_busData_by_source_destination/{source}/{destination}") 
+	public ResponseEntity<?> getBusDataBySourceAndDestination( @PathVariable ("source") String source , @PathVariable ("destination") String destination) throws BusNotFound{
+		
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(busDataService.getBusDataBySourceAndDestination(source, destination));
+	}
+
 }
